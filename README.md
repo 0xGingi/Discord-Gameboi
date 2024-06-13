@@ -11,7 +11,7 @@ You will need to install:
 Place gambatte_sdl executable in /usr/bin or add the location to your path
 
 
-* Takes screenshot of emulator every 1 second & whenever a user reacts
+* Takes screenshot of emulator every 5 seconds & whenever a user reacts
 * Emoji reactions for all emulator buttons, including Save/Load State
 ```
 gameboi start - start the emulator
