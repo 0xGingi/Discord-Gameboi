@@ -48,16 +48,22 @@ def GetWindowCoords():
 			Y2 = Y1 + int(f[5])
 			return (X1, Y1, X2, Y2)
 	return None
-	
+
+new_reaction = False	
+
 async def UpdateFrame():
     global msg
     global CurrentUpdate
     global UpdateLimit
+    global new_reaction
     while True:
         if ch is not None:
             print ("Updating Frame...")
-            await SendImage(True)  
-            await asyncio.sleep(1)
+            await SendImage(True)
+            if not new_reaction:
+                await asyncio.sleep(5)
+            else:
+                new_reaction = False
         else:
             await asyncio.sleep(0.5)
 
@@ -111,7 +117,7 @@ async def SendKey(k, movkey=False):
 async def on_reaction_add(reaction, user):
     global msg
     global emotes
-    global CurrentUpdate
+    global new_reaction
     if reaction.message.author == client.user and user != client.user:
         reaction_emoji = str(reaction)
         if IsValidReaction(reaction_emoji):
@@ -139,8 +145,9 @@ async def on_reaction_add(reaction, user):
             elif reaction_emoji == emotes["Load"]:
                 await SendKey(Key.f8)
             
-            CurrentUpdate = 0
             await reaction.remove(user)
+            new_reaction = True
+            
 
 @client.event
 async def on_message(message):
