@@ -14,8 +14,10 @@ load_dotenv()
 client = discord.Client(intents=intents)
 token = os.getenv('DISCORD_TOKEN')
 
-loadedrom = "PokemonRed.gb"
-pathtorom = os.getcwd() + "/" + loadedrom
+loadedrom = os.getenv('LOADED_ROM')
+pathtorom = os.getenv('PATH_TO_ROM') or os.getcwd()
+pathtorom += "/" + loadedrom
+
 msg = None
 ch = None
 UpdateLimit = 3
