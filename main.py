@@ -61,7 +61,7 @@ async def UpdateFrame():
             print ("Updating Frame...")
             await SendImage(True)
             if not new_reaction:
-                await asyncio.sleep(5)
+                await asyncio.sleep(1)
             else:
                 new_reaction = False
         else:
