@@ -2,7 +2,7 @@ import os
 import discord, platform, asyncio
 import random, time
 import subprocess
-import pyscreenshot as ImageGrab
+from PIL import ImageGrab
 import io
 from pynput.keyboard import Key, Controller
 from dotenv import load_dotenv
@@ -23,8 +23,7 @@ CurrentUpdate = 0
 keyboard = Controller()
 
 movtime = 0.25
-emotes = {"LeftArrow": "\u2B05", "DownArrow": "\u2B07", "UpArrow": "\u2B06", "RightArrow": "\u27A1", "AButton": "\U0001F170", "BButton": "\U0001F171", "Start": "\u25B6", "Select": "\U0001F502"}
-
+emotes = {"LeftArrow": "\u2B05", "DownArrow": "\u2B07", "UpArrow": "\u2B06", "RightArrow": "\u27A1", "AButton": "\U0001F170", "BButton": "\U0001F171", "Start": "\u25B6", "Select": "\U0001F502", "Save": "\U0001F4BE", "Load": "\U0001F504"}
 def IsValidReaction(react):
 	global emotes
 	for emote in emotes:
@@ -51,23 +50,16 @@ def GetWindowCoords():
 	return None
 	
 async def UpdateFrame():
-	global msg
-	global CurrentUpdate
-	global UpdateLimit
-	while True:
-		if (ch != None):
-			CurrentUpdate += 1
-			if (CurrentUpdate < UpdateLimit):
-				print ("Updating Frame...")
-				await SendImage()
-			elif (CurrentUpdate == UpdateLimit):
-				print ("Updating Frame+Emojis...")
-				await SendImage(True)
-				print ("All good.")
-			else:
-				await asyncio.sleep(0.5)
-		else:
-			await asyncio.sleep(0.5)
+    global msg
+    global CurrentUpdate
+    global UpdateLimit
+    while True:
+        if ch is not None:
+            print ("Updating Frame...")
+            await SendImage(True)  
+            await asyncio.sleep(1)
+        else:
+            await asyncio.sleep(0.5)
 
 async def SendImage(react=False):
     global msg
@@ -91,13 +83,13 @@ async def SendImage(react=False):
         await msg.edit(content=image_url)
 
     if react:
-        reactions = [emotes["AButton"], emotes["BButton"], emotes["LeftArrow"], emotes["DownArrow"], emotes["UpArrow"], emotes["RightArrow"], emotes["Start"], emotes["Select"]]
+        reactions = [emotes["AButton"], emotes["BButton"], emotes["LeftArrow"], emotes["DownArrow"], emotes["UpArrow"], emotes["RightArrow"], emotes["Start"], emotes["Select"], emotes["Save"], emotes["Load"]]
         await asyncio.gather(*(msg.add_reaction(reaction) for reaction in reactions))
 
 @client.event
 async def on_ready():
 	global image_ch
-	image_ch_id = int(os.getenv('IMAGE_CHANNEL_ID'))
+	image_ch_id = int(os.getenv('SPAM_CHANNEL_ID'))
 	image_ch = client.get_channel(image_ch_id)
 	print('All good! Name: ' + client.user.name)
 	asyncio.ensure_future(UpdateFrame())
@@ -142,6 +134,10 @@ async def on_reaction_add(reaction, user):
                 await SendKey(Key.enter)
             elif reaction_emoji == emotes["Select"]:
                 await SendKey(Key.shift_r)
+            elif reaction_emoji == emotes["Save"]:
+                await SendKey(Key.f5)
+            elif reaction_emoji == emotes["Load"]:
+                await SendKey(Key.f8)
             
             CurrentUpdate = 0
             await reaction.remove(user)
@@ -177,14 +173,6 @@ async def on_message(message):
 		movtime = float(inp)
 		if (ch != None and message.channel == ch):
 			await ch.send("Setting movement speed as: **" + str(inp) + "** (Default: 0.25)")
-	elif (message.content[:5] == "gameboi save"):
-		keyboard.press(Key.f5)
-		keyboard.release(Key.f5)
-		await ch.send(f"Game saved")
-	elif (message.content[:5] == "gameboi load"):
-		keyboard.press(Key.f8)
-		keyboard.release(Key.f8)
-		await ch.send(f"Game loaded")
 
 while True:
 	try:
