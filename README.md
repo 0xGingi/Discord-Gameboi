@@ -7,6 +7,9 @@
 You will need to install:
 - `sudo apt-get install wmctrl libsdl1.2-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev`
 - `pip install pynput discord.py asyncio python-dotenv pillow`
+- `wget https://github.com/0xGingi/gambatte/releases/download/v1/gambatte_sdl`
+- `chmod +x gambatte_sdl`
+- `sudo mv gambatte_sdl /usr/bin/`
 
 Place gambatte_sdl executable in /usr/bin or add the location to your path
 
