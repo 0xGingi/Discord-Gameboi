@@ -81,12 +81,11 @@ async def SendImage(react=False):
     os.system("wmctrl -a 'Gambatte SDL'")
     im = ImageGrab.grab(bbox=(coords[0], coords[1], coords[2], coords[3]))  # X1,Y1,X2,Y2
 
-    with BytesIO() as buf:
-        im.save(buf, format='JPEG')
-        buf.seek(0)
-        image_msg = await image_ch.send(file=discord.File(buf, filename='frame.jpg'))
+    # Save the image to your web server
+    im.save(os.getenv('IMAGE_PATH'))
 
-    image_url = image_msg.attachments[0].url
+    # Create a URL for the image with a query string to prevent caching
+    image_url = os.getenv('IMAGE_URL') + '?time=' + str(time.time())
 
     if msg is None:
         msg = await ch.send(image_url)
@@ -96,7 +95,6 @@ async def SendImage(react=False):
     if react:
         reactions = [emotes["AButton"], emotes["BButton"], emotes["LeftArrow"], emotes["DownArrow"], emotes["UpArrow"], emotes["RightArrow"], emotes["Start"], emotes["Select"], emotes["Save"], emotes["Load"]]
         await asyncio.gather(*(msg.add_reaction(reaction) for reaction in reactions))
-
 
 @client.event
 async def on_ready():
