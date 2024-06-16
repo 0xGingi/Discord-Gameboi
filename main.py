@@ -25,7 +25,7 @@ CurrentUpdate = 0
 keyboard = Controller()
 
 movtime = 0.25
-emotes = {"LeftArrow": "\u2B05", "DownArrow": "\u2B07", "UpArrow": "\u2B06", "RightArrow": "\u27A1", "AButton": "\U0001F170", "BButton": "\U0001F171", "Start": "\u25B6", "Select": "\U0001F502", "Save": "\U0001F4BE", "Load": "\U0001F504"}
+emotes = {"LeftArrow": "\u2B05", "DownArrow": "\u2B07", "UpArrow": "\u2B06", "RightArrow": "\u27A1", "AButton": "\U0001F170", "BButton": "\U0001F171", "Start": "\u25B6", "Select": "\U0001F502", "Save": "\U0001F4BE", "Load": "\U0001F504", "SpeedUp": "\U000023E9"}
 def IsValidReaction(react):
 	global emotes
 	for emote in emotes:
@@ -94,7 +94,7 @@ async def SendImage(react=False):
         await msg.edit(content=image_url)
 
     if react:
-        reactions = [emotes["AButton"], emotes["BButton"], emotes["LeftArrow"], emotes["DownArrow"], emotes["UpArrow"], emotes["RightArrow"], emotes["Start"], emotes["Select"], emotes["Save"], emotes["Load"]]
+        reactions = [emotes["AButton"], emotes["BButton"], emotes["LeftArrow"], emotes["DownArrow"], emotes["UpArrow"], emotes["RightArrow"], emotes["Start"], emotes["Select"], emotes["Save"], emotes["Load"], emotes["SpeedUp"]]
         await asyncio.gather(*(msg.add_reaction(reaction) for reaction in reactions))
 
 
@@ -108,49 +108,84 @@ async def on_ready():
 	
 	await client.change_presence(activity=discord.Game(name='gameboi start'))
 
-async def SendKey(k, movkey=False):
-	global keyboard
-	global movtime
-	keyboard.press(k)
-	if (movkey == False):
-		await asyncio.sleep(0.25)
-	else:
-		await asyncio.sleep(movtime)
-		
-	keyboard.release(k)
-	
+async def SendKey(k, movkey=False, extra_key=None):
+    global keyboard
+    global movtime
+    keyboard.press(k)
+    if extra_key:
+        keyboard.press(extra_key)
+    if (movkey == False):
+        await asyncio.sleep(0.25)
+    else:
+        await asyncio.sleep(movtime)
+        
+    keyboard.release(k)
+    if extra_key:
+        keyboard.release(extra_key)
+
+speedup_active = False
+
 @client.event
 async def on_reaction_add(reaction, user):
     global msg
     global emotes
     global new_reaction
     global frame_without_reaction
+    global speedup_active
     if reaction.message.author == client.user and user != client.user:
         reaction_emoji = str(reaction)
         if IsValidReaction(reaction_emoji):
             print ("Input Received: " + reaction_emoji)
             os.system("wmctrl -a 'Gambatte SDL'")
             
-            if reaction_emoji == emotes["LeftArrow"]:
-                await SendKey(Key.left, True)
-            elif reaction_emoji == emotes["DownArrow"]:
-                await SendKey(Key.down, True)
-            elif reaction_emoji == emotes["UpArrow"]:
-                await SendKey(Key.up, True)
-            elif reaction_emoji == emotes["RightArrow"]:
-                await SendKey(Key.right, True)
-            elif reaction_emoji == emotes["AButton"]:
-                await SendKey("d")
-            elif reaction_emoji == emotes["BButton"]:
-                await SendKey("c")
-            elif reaction_emoji == emotes["Start"]:
-                await SendKey(Key.enter)
-            elif reaction_emoji == emotes["Select"]:
-                await SendKey(Key.shift_r)
-            elif reaction_emoji == emotes["Save"]:
-                await SendKey(Key.f5)
-            elif reaction_emoji == emotes["Load"]:
-                await SendKey(Key.f8)
+            if reaction_emoji == emotes["SpeedUp"]:
+                speedup_active = True
+                await reaction.remove(user)
+                return
+
+            if speedup_active:
+                if reaction_emoji == emotes["LeftArrow"]:
+                    await SendKey(Key.tab, True, Key.left)
+                elif reaction_emoji == emotes["DownArrow"]:
+                    await SendKey(Key.tab, True, Key.down)
+                elif reaction_emoji == emotes["UpArrow"]:
+                    await SendKey(Key.tab, True, Key.up)
+                elif reaction_emoji == emotes["RightArrow"]:
+                    await SendKey(Key.tab, True, Key.right)
+                elif reaction_emoji == emotes["AButton"]:
+                    await SendKey(Key.tab, False, "d")
+                elif reaction_emoji == emotes["BButton"]:
+                    await SendKey(Key.tab, False, "c")
+                elif reaction_emoji == emotes["Start"]:
+                    await SendKey(Key.tab, False, Key.enter)
+                elif reaction_emoji == emotes["Select"]:
+                    await SendKey(Key.tab, False, Key.shift_r)
+                elif reaction_emoji == emotes["Save"]:
+                    await SendKey(Key.tab, False, Key.f5)
+                elif reaction_emoji == emotes["Load"]:
+                    await SendKey(Key.tab, False, Key.f8)
+                speedup_active = False
+            else:
+                if reaction_emoji == emotes["LeftArrow"]:
+                    await SendKey(Key.left, True)
+                elif reaction_emoji == emotes["DownArrow"]:
+                    await SendKey(Key.down, True)
+                elif reaction_emoji == emotes["UpArrow"]:
+                    await SendKey(Key.up, True)
+                elif reaction_emoji == emotes["RightArrow"]:
+                    await SendKey(Key.right, True)
+                elif reaction_emoji == emotes["AButton"]:
+                    await SendKey("d")
+                elif reaction_emoji == emotes["BButton"]:
+                    await SendKey("c")
+                elif reaction_emoji == emotes["Start"]:
+                    await SendKey(Key.enter)
+                elif reaction_emoji == emotes["Select"]:
+                    await SendKey(Key.shift_r)
+                elif reaction_emoji == emotes["Save"]:
+                    await SendKey(Key.f5)
+                elif reaction_emoji == emotes["Load"]:
+                    await SendKey(Key.f8)
             
             await reaction.remove(user)
             new_reaction = True
@@ -158,36 +193,30 @@ async def on_reaction_add(reaction, user):
 
 @client.event
 async def on_message(message):
-	global msg
-	global ch
-	global CurrentUpdate
-	global movtime
-	
-	if message.author == client.user:
-		return
-	
-	if (message.content == "gameboi start"):
-		if (GetWindowCoords() == None):
-			os.system("gambatte_sdl " + pathtorom + " --scale 2 &")
-			
-		while (GetWindowCoords() == None):
-			time.sleep(0.1)
-		
-		if (ch != message.channel):
-			ch = message.channel
-			msg = None
-			CurrentUpdate = 0
-	elif (message.content == "gameboi stop"):
-		await msg.delete()
-		ch = None
-	elif (message.content == "gameboi loadrom"):
-		pass
-	elif (message.content[:8] == "gameboi time"):
-		inp = message.content[9:]
-		movtime = float(inp)
-		if (ch != None and message.channel == ch):
-			await ch.send("Setting movement speed as: **" + str(inp) + "** (Default: 0.25)")
-
+    global msg
+    global ch
+    global CurrentUpdate
+    global movtime
+    
+    if message.author == client.user:
+        return
+    
+    if (message.content == "gameboi start"):
+        if (GetWindowCoords() == None):
+            os.system("gambatte_sdl " + pathtorom + " --scale 2 &")
+            
+        while (GetWindowCoords() == None):
+            time.sleep(0.1)
+        
+        if (ch != message.channel):
+            ch = message.channel
+            msg = None
+            CurrentUpdate = 0
+                              
+    elif (message.content == "gameboi stop"):
+        await msg.delete()
+        msg = None
+        ch = None
 while True:
 	try:
 		client.run(token)

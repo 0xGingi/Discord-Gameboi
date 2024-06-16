@@ -16,13 +16,13 @@ Place gambatte_sdl executable in /usr/bin or add the location to your path
 
 * Takes screenshot of emulator every 1 second & whenever a user reacts
 * Emoji reactions for all emulator buttons, including Save/Load State
+* Press fastforward reaction then another button reaction to temporarily speedup that button press
 * Sends all images to the channel you put in .env (Only If using main.py)
 * Use webserver and update discord message with link to image (Only If using main2.py)
 * updates message with images from that channel or link
 ```
 gameboi start - start the emulator
 gameboi stop - stops the emulator
-gameboi time <int> - changes movement speed
 ```
 
 
