@@ -106,7 +106,7 @@ async def on_ready():
 	print('All good! Name: ' + client.user.name)
 	asyncio.ensure_future(UpdateFrame())
 	
-	await client.change_presence(activity=discord.Game(name='%activate'))
+	await client.change_presence(activity=discord.Game(name='gameboi start'))
 
 async def SendKey(k, movkey=False):
 	global keyboard
